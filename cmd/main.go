@@ -12,9 +12,8 @@ import (
 )
 
 const (
-	dbUri    = "mongodb://localhost:27017"
-	dbName   = "hotel-reservation"
-	userColl = "users"
+	dbName = "hotel-reservation"
+	dbUri  = "mongodb://localhost:27017"
 )
 
 var config = fiber.Config{
@@ -34,7 +33,7 @@ func main() {
 	}
 
 	// handlers init
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, dbName))
 
 	app := fiber.New(config)
 	apiV1 := app.Group("/api/v1")
