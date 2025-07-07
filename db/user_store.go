@@ -40,7 +40,7 @@ func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
 }
 
 func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.User, error) {
-	objectID, err := convertToObjectID(id)
+	objectID, err := ConvertToObjectID(id)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*typ
 }
 
 func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update bson.M) error {
-	objectID, err := convertToObjectID(id)
+	objectID, err := ConvertToObjectID(id)
 	if err != nil {
 		return err
 	}
@@ -95,7 +95,7 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update bson.
 }
 
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
-	objectID, err := convertToObjectID(id)
+	objectID, err := ConvertToObjectID(id)
 	if err != nil {
 		return err
 	}

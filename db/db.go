@@ -13,7 +13,13 @@ const (
 	TestDbUri  = "mongodb://localhost:27017"
 )
 
-// convertToObjectID преобразует строковый идентификатор документа в формат MongoDB ObjectID.
+type Store struct {
+	User  UserStore
+	Hotel HotelStore
+	Room  RoomStore
+}
+
+// ConvertToObjectID преобразует строковый идентификатор документа в формат MongoDB ObjectID.
 // Данная функция необходима для корректной работы с идентификаторами в MongoDB, где каждый документ
 // использует 12-байтовый бинарный формат вместо строкового представления.
 //
@@ -31,11 +37,11 @@ const (
 //
 // Пример использования:
 //
-//	objectID, err := convertToObjectID("5f7d9c8e6a3b1d0e4c8b9a7d")
+//	objectID, err := ConvertToObjectID("5f7d9c8e6a3b1d0e4c8b9a7d")
 //	if err != nil {
 //	    // обработка ошибки
 //	}
-func convertToObjectID(id string) (primitive.ObjectID, error) {
+func ConvertToObjectID(id string) (primitive.ObjectID, error) {
 	// Проверка на пустой идентификатор перед преобразованием
 	if id == "" {
 		return primitive.NilObjectID, errors.New("empty id provided")

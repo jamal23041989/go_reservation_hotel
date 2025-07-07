@@ -7,31 +7,46 @@ import (
 )
 
 type HotelHandler struct {
-	hotelStore db.HotelStore
-	roomStore  db.RoomStore
+	store *db.Store
 }
 
-func NewHotelHandler(hotelStore db.HotelStore, roomStore db.RoomStore) *HotelHandler {
+func NewHotelHandler(store *db.Store) *HotelHandler {
 	return &HotelHandler{
-		hotelStore: hotelStore,
-		roomStore:  roomStore,
+		store: store,
 	}
-}
-
-type HotelQueryParams struct {
-	Rooms  bool
-	Rating int
 }
 
 func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
-	var qParams HotelQueryParams
-	if err := c.QueryParser(&qParams); err != nil {
-		return err
-	}
-
-	hotels, err := h.hotelStore.GetHotels(c.Context(), bson.M{})
+	hotels, err := h.store.Hotel.GetHotels(c.Context(), bson.M{})
 	if err != nil {
 		return err
 	}
 	return c.JSON(hotels)
+}
+
+func (h *HotelHandler) HandleGetHotelByIDRooms(c *fiber.Ctx) error {
+	id := c.Params("id")
+	objectID, err := db.ConvertToObjectID(id)
+	if err != nil {
+		return err
+	}
+
+	filter := bson.M{"hotel_id": objectID}
+	rooms, err := h.store.Room.GetRooms(c.Context(), filter)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(rooms)
+}
+
+func (h *HotelHandler) HandleGetHotelByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	hotel, err := h.store.Hotel.GetHotelByID(c.Context(), id)
+	if err != nil {
+		return err
+	}
+
+	return c.JSON(hotel)
 }
