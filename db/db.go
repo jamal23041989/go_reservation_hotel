@@ -6,6 +6,13 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	NameDb     = "hotel-reservation"
+	UriDb      = "mongodb://localhost:27017"
+	TestDbName = "hotel-reservation-test"
+	TestDbUri  = "mongodb://localhost:27017"
+)
+
 // convertToObjectID преобразует строковый идентификатор документа в формат MongoDB ObjectID.
 // Данная функция необходима для корректной работы с идентификаторами в MongoDB, где каждый документ
 // использует 12-байтовый бинарный формат вместо строкового представления.

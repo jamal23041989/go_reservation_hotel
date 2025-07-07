@@ -11,11 +11,6 @@ import (
 	"log"
 )
 
-const (
-	dbName = "hotel-reservation"
-	dbUri  = "mongodb://localhost:27017"
-)
-
 var config = fiber.Config{
 	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
 		return ctx.JSON(map[string]string{"error": err.Error()})
@@ -23,26 +18,43 @@ var config = fiber.Config{
 }
 
 func main() {
-
+	// listenAddr
 	listenAddr := flag.String("listenAddr", ":5000", "The listen address of the API server")
 	flag.Parse()
 
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dbUri))
+	// mongodb client
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(db.UriDb))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// handlers init
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, dbName))
+	// store
+	var (
+		userStore  = db.NewMongoUserStore(client)
+		hotelStore = db.NewMongoHotelStore(client)
+		roomStore  = db.NewMongoRoomStore(client, hotelStore)
+	)
 
+	// handlers init
+	var (
+		userHandler  = api.NewUserHandler(userStore)
+		hotelHandler = api.NewHotelHandler(hotelStore, roomStore)
+	)
+
+	// fiber config and group handler
 	app := fiber.New(config)
 	apiV1 := app.Group("/api/v1")
 
+	// user handler
 	apiV1.Get("/user", userHandler.HandleGetUsers)
 	apiV1.Get("/user/:id", userHandler.HandleGetUser)
 	apiV1.Post("/user", userHandler.HandleInsertUser)
 	apiV1.Put("/user/:id", userHandler.HandleUpdateUser)
 	apiV1.Delete("/user/:id", userHandler.HandleDeleteUser)
 
+	// hotel handler
+	apiV1.Get("/hotel", hotelHandler.HandleGetHotels)
+
+	// http server
 	app.Listen(*listenAddr)
 }

@@ -32,10 +32,10 @@ type MongoUserStore struct {
 	coll   *mongo.Collection
 }
 
-func NewMongoUserStore(client *mongo.Client, dbName string) *MongoUserStore {
+func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
 	return &MongoUserStore{
 		client: client,
-		coll:   client.Database(dbName).Collection(userColl),
+		coll:   client.Database(NameDb).Collection(userColl),
 	}
 }
 
@@ -69,11 +69,11 @@ func (s *MongoUserStore) GetUsers(ctx context.Context) ([]*types.User, error) {
 }
 
 func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*types.User, error) {
-	res, err := s.coll.InsertOne(ctx, user)
+	resp, err := s.coll.InsertOne(ctx, user)
 	if err != nil {
 		return nil, err
 	}
-	user.ID = res.InsertedID.(primitive.ObjectID)
+	user.ID = resp.InsertedID.(primitive.ObjectID)
 	return user, nil
 }
 
@@ -83,11 +83,11 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update bson.
 		return err
 	}
 
-	updateOne, err := s.coll.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
+	res, err := s.coll.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
 	if err != nil {
 		return err
 	}
-	if updateOne.MatchedCount == 0 {
+	if res.MatchedCount == 0 {
 		return mongo.ErrNoDocuments
 	}
 

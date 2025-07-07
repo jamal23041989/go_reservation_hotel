@@ -36,7 +36,6 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
-
 	return c.JSON(users)
 }
 
@@ -45,8 +44,8 @@ func (h *UserHandler) HandleInsertUser(c *fiber.Ctx) error {
 	if err := c.BodyParser(&params); err != nil {
 		return err
 	}
-	if errors := params.Validate(); len(errors) > 0 {
-		return c.JSON(errors)
+	if errorsValid := params.Validate(); len(errorsValid) > 0 {
+		return c.JSON(errorsValid)
 	}
 
 	user, err := types.NewUserFromParams(params)
