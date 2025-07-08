@@ -4,45 +4,56 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/jamal23041989/go_reservation_hotel/db"
 	"os"
 	"strconv"
 	"time"
 )
 
-func JwtAuthentication(c *fiber.Ctx) error {
-	token, ok := c.GetReqHeaders()["X-Api-Token"]
-	if !ok {
-		return c.Status(fiber.StatusUnauthorized).SendString("missing token")
-	}
+func JwtAuthentication(userStore db.UserStore) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		token, ok := c.GetReqHeaders()["X-Api-Token"]
+		if !ok {
+			return c.Status(fiber.StatusUnauthorized).SendString("missing token")
+		}
 
-	claims, err := validateToken(token[0])
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
-	}
-
-	expiresValue := claims["expires"]
-
-	var expires int64
-	switch v := expiresValue.(type) {
-	case float64:
-		expires = int64(v)
-	case string:
-		expiresInt, err := strconv.ParseInt(v, 10, 64)
+		claims, err := validateToken(token[0])
 		if err != nil {
-			fmt.Println("invalid expires format:", v)
+			return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
+		}
+
+		expiresValue := claims["expires"]
+
+		var expires int64
+		switch v := expiresValue.(type) {
+		case float64:
+			expires = int64(v)
+		case string:
+			expiresInt, err := strconv.ParseInt(v, 10, 64)
+			if err != nil {
+				fmt.Println("invalid expires format:", v)
+				return c.Status(fiber.StatusUnauthorized).SendString("invalid token format")
+			}
+			expires = expiresInt
+		default:
+			fmt.Printf("unexpected expires type: %T\n", v)
 			return c.Status(fiber.StatusUnauthorized).SendString("invalid token format")
 		}
-		expires = expiresInt
-	default:
-		fmt.Printf("unexpected expires type: %T\n", v)
-		return c.Status(fiber.StatusUnauthorized).SendString("invalid token format")
+
+		if time.Now().Unix() > expires {
+			return c.Status(fiber.StatusUnauthorized).SendString("token expired")
+		}
+
+		userID := claims["user_id"].(string)
+		user, err := userStore.GetUserByID(c.Context(), userID)
+		if err != nil {
+			return err
+		}
+		c.Context().SetUserValue("user", user)
+
+		return c.Next()
 	}
 
-	if time.Now().Unix() > expires {
-		return c.Status(fiber.StatusUnauthorized).SendString("token expired")
-	}
-
-	return c.Next()
 }
 
 func validateToken(tokenStr string) (jwt.MapClaims, error) {
