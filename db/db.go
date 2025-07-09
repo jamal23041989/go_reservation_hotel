@@ -7,10 +7,8 @@ import (
 )
 
 const (
-	NameDb     = "hotel-reservation"
-	UriDb      = "mongodb://localhost:27017"
-	TestDbName = "hotel-reservation-test"
-	TestDbUri  = "mongodb://localhost:27017"
+	NameDb = "hotel-reservation"
+	UriDb  = "mongodb://localhost:27017"
 )
 
 type Store struct {

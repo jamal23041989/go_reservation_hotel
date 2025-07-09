@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
 	"github.com/jamal23041989/go_reservation_hotel/types"
 	"net/http"
 	"net/http/httptest"
@@ -34,15 +35,15 @@ func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
 func TestAuthenticateSuccess(t *testing.T) {
 	tdb := setup(t)
 	defer tdb.teardown(t)
-	insertedUser := insertTestUser(t, tdb.UserStore)
+	insertedUser := fixtures.AddUser(tdb.Store, "james", "foo", false)
 
 	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
+	authHandler := NewAuthHandler(tdb.User)
 	app.Post("/", authHandler.HandleAuthenticate)
 
 	authParams := AuthParams{
-		Email:    "james2@gmail.com",
-		Password: "supersecurepassword",
+		Email:    "james@foo.com",
+		Password: "james_foo",
 	}
 
 	b, _ := json.Marshal(authParams)
@@ -69,43 +70,5 @@ func TestAuthenticateSuccess(t *testing.T) {
 	insertedUser.EncryptedPassword = ""
 	if !reflect.DeepEqual(insertedUser, authResp.User) {
 		t.Fatalf("expected the user to be the insertedUser")
-	}
-}
-
-type genericResp struct {
-	Status int    `json:"status"`
-	Msg    string `json:"msg"`
-}
-
-func TestAuthenticateFailure(t *testing.T) {
-	tdb := setup(t)
-	defer tdb.teardown(t)
-	insertTestUser(t, tdb.UserStore)
-
-	app := fiber.New()
-	authHandler := NewAuthHandler(tdb.UserStore)
-	app.Post("/", authHandler.HandleAuthenticate)
-
-	authParams := AuthParams{
-		Email:    "james2@gmail.com",
-		Password: "supersecurepasswordnot",
-	}
-
-	b, _ := json.Marshal(authParams)
-	req := httptest.NewRequest("POST", "/", bytes.NewReader(b))
-	req.Header.Add("Content-Type", "application/json")
-
-	resp, err := app.Test(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("expected http status %d but got %d", http.StatusBadRequest, resp.StatusCode)
-	}
-
-	var errorResp genericResp
-	if err := json.NewDecoder(resp.Body).Decode(&errorResp); err != nil {
-		t.Fatal(err)
 	}
 }

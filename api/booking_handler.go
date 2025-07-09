@@ -43,7 +43,7 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 	}
 
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
+		return c.Status(http.StatusUnauthorized).JSON(GenericResp{
 			Type: "error",
 			Msg:  "not authorized",
 		})
@@ -66,7 +66,7 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 	}
 
 	if booking.UserID != user.ID {
-		return c.Status(http.StatusUnauthorized).JSON(genericResp{
+		return c.Status(http.StatusUnauthorized).JSON(GenericResp{
 			Type: "error",
 			Msg:  "not authorized",
 		})
@@ -76,7 +76,7 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.JSON(genericResp{
+	return c.JSON(GenericResp{
 		Type: "msg",
 		Msg:  "updated",
 	})

@@ -12,9 +12,9 @@ import (
 	"time"
 )
 
-type genericResp struct {
-	Type string
-	Msg  string
+type GenericResp struct {
+	Type string `json:"type"`
+	Msg  string `json:"msg"`
 }
 
 type BookRoomParams struct {
@@ -57,7 +57,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 
 	user, ok := c.Context().Value("user").(*types.User)
 	if !ok {
-		return c.Status(http.StatusInternalServerError).JSON(genericResp{
+		return c.Status(http.StatusInternalServerError).JSON(GenericResp{
 			Type: "error",
 			Msg:  "internal server error",
 		})
@@ -68,7 +68,7 @@ func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
 		return err
 	}
 	if !ok {
-		return c.Status(http.StatusBadRequest).JSON(genericResp{
+		return c.Status(http.StatusBadRequest).JSON(GenericResp{
 			Type: "error",
 			Msg:  fmt.Sprintf("room %s alredy booked", roomID),
 		})
