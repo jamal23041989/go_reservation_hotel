@@ -16,6 +16,7 @@ type BookingStore interface {
 	InsertBooking(context.Context, *types.Booking) (*types.Booking, error)
 	GetBookingByID(context.Context, string) (*types.Booking, error)
 	GetBookings(context.Context, bson.M) ([]*types.Booking, error)
+	UpdateBooking(context.Context, string, bson.M) error
 }
 
 type MongoBookingStore struct {
@@ -66,4 +67,25 @@ func (s *MongoBookingStore) GetBookingByID(ctx context.Context, id string) (*typ
 	}
 
 	return &booking, nil
+}
+
+func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string, update bson.M) error {
+	objectID, err := ConvertToObjectID(id)
+	if err != nil {
+		return err
+	}
+
+	m := bson.M{
+		"$set": update,
+	}
+
+	res, err := s.coll.UpdateByID(ctx, objectID, m)
+	if err != nil {
+		return err
+	}
+	if res.MatchedCount == 0 {
+		return mongo.ErrNoDocuments
+	}
+
+	return nil
 }
