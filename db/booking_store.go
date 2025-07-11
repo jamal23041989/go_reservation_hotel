@@ -2,8 +2,8 @@ package db
 
 import (
 	"context"
+	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/jamal23041989/go_reservation_hotel/types"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -15,8 +15,8 @@ const (
 type BookingStore interface {
 	InsertBooking(context.Context, *types.Booking) (*types.Booking, error)
 	GetBookingByID(context.Context, string) (*types.Booking, error)
-	GetBookings(context.Context, bson.M) ([]*types.Booking, error)
-	UpdateBooking(context.Context, string, bson.M) error
+	GetBookings(context.Context, Map) ([]*types.Booking, error)
+	UpdateBooking(context.Context, string, Map) error
 }
 
 type MongoBookingStore struct {
@@ -40,7 +40,7 @@ func (s *MongoBookingStore) InsertBooking(ctx context.Context, booking *types.Bo
 	return booking, nil
 }
 
-func (s *MongoBookingStore) GetBookings(ctx context.Context, filter bson.M) ([]*types.Booking, error) {
+func (s *MongoBookingStore) GetBookings(ctx context.Context, filter Map) ([]*types.Booking, error) {
 	cursor, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err
@@ -56,30 +56,26 @@ func (s *MongoBookingStore) GetBookings(ctx context.Context, filter bson.M) ([]*
 }
 
 func (s *MongoBookingStore) GetBookingByID(ctx context.Context, id string) (*types.Booking, error) {
-	objectID, err := ConvertToObjectID(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, pkg.ErrInvalidID()
 	}
 
 	var booking types.Booking
-	if err := s.coll.FindOne(ctx, bson.M{"_id": objectID}).Decode(&booking); err != nil {
+	if err := s.coll.FindOne(ctx, Map{"_id": objectID}).Decode(&booking); err != nil {
 		return nil, err
 	}
 
 	return &booking, nil
 }
 
-func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string, update bson.M) error {
-	objectID, err := ConvertToObjectID(id)
+func (s *MongoBookingStore) UpdateBooking(ctx context.Context, id string, update Map) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return pkg.ErrInvalidID()
 	}
 
-	m := bson.M{
-		"$set": update,
-	}
-
-	res, err := s.coll.UpdateByID(ctx, objectID, m)
+	res, err := s.coll.UpdateByID(ctx, objectID, Map{"$set": update})
 	if err != nil {
 		return err
 	}

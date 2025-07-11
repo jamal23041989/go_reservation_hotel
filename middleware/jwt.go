@@ -5,6 +5,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/pkg"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -14,12 +16,14 @@ func JwtAuthentication(userStore db.UserStore) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		token, ok := c.GetReqHeaders()["X-Api-Token"]
 		if !ok {
-			return c.Status(fiber.StatusUnauthorized).SendString("missing token")
+			jwtError := pkg.NewError(http.StatusUnauthorized, "missing token")
+			return c.Status(jwtError.Code).JSON(jwtError)
 		}
 
 		claims, err := validateToken(token[0])
 		if err != nil {
-			return c.Status(fiber.StatusUnauthorized).SendString(err.Error())
+			jwtError := pkg.NewError(http.StatusUnauthorized, err.Error())
+			return c.Status(jwtError.Code).JSON(jwtError)
 		}
 
 		expiresValue := claims["expires"]
@@ -32,16 +36,19 @@ func JwtAuthentication(userStore db.UserStore) fiber.Handler {
 			expiresInt, err := strconv.ParseInt(v, 10, 64)
 			if err != nil {
 				fmt.Println("invalid expires format:", v)
-				return c.Status(fiber.StatusUnauthorized).SendString("invalid token format")
+				jwtError := pkg.NewError(http.StatusUnauthorized, "invalid token format")
+				return c.Status(jwtError.Code).JSON(jwtError)
 			}
 			expires = expiresInt
 		default:
 			fmt.Printf("unexpected expires type: %T\n", v)
-			return c.Status(fiber.StatusUnauthorized).SendString("invalid token format")
+			jwtError := pkg.NewError(http.StatusUnauthorized, "invalid token format")
+			return c.Status(jwtError.Code).JSON(jwtError)
 		}
 
 		if time.Now().Unix() > expires {
-			return c.Status(fiber.StatusUnauthorized).SendString("token expired")
+			jwtError := pkg.NewError(http.StatusUnauthorized, "token expired")
+			return c.Status(jwtError.Code).JSON(jwtError)
 		}
 
 		userID := claims["user_id"].(string)
@@ -60,7 +67,7 @@ func validateToken(tokenStr string) (jwt.MapClaims, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			fmt.Println("invalid signing method", token.Header["alg"])
-			return nil, fmt.Errorf("unauthorized")
+			return nil, pkg.ErrUnauthorized()
 		}
 		secret := os.Getenv("JWT_SECRET")
 		return []byte(secret), nil
@@ -68,17 +75,17 @@ func validateToken(tokenStr string) (jwt.MapClaims, error) {
 
 	if err != nil {
 		fmt.Println("failed to parse JWT token:", err)
-		return nil, fmt.Errorf("unauthorized")
+		return nil, pkg.ErrUnauthorized()
 	}
 
 	if !token.Valid {
 		fmt.Println("invalid token:")
-		return nil, fmt.Errorf("unauthorized")
+		return nil, pkg.ErrUnauthorized()
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return nil, fmt.Errorf("unauthorized")
+		return nil, pkg.ErrUnauthorized()
 	}
 
 	return claims, nil

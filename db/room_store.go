@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"github.com/jamal23041989/go_reservation_hotel/types"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -14,7 +13,7 @@ const (
 
 type RoomStore interface {
 	InsertRoom(context.Context, *types.Room) (*types.Room, error)
-	GetRooms(context.Context, bson.M) ([]*types.Room, error)
+	GetRooms(context.Context, Map) ([]*types.Room, error)
 }
 
 type MongoRoomStore struct {
@@ -39,8 +38,8 @@ func (s *MongoRoomStore) InsertRoom(ctx context.Context, room *types.Room) (*typ
 
 	room.ID = resp.InsertedID.(primitive.ObjectID)
 
-	filter := bson.M{"_id": room.HotelID}
-	update := bson.M{"$push": bson.M{"rooms": room.ID}}
+	filter := Map{"_id": room.HotelID}
+	update := Map{"$push": Map{"rooms": room.ID}}
 
 	if err := s.hotelStore.Update(ctx, filter, update); err != nil {
 		return nil, err
@@ -49,7 +48,7 @@ func (s *MongoRoomStore) InsertRoom(ctx context.Context, room *types.Room) (*typ
 	return room, nil
 }
 
-func (s *MongoRoomStore) GetRooms(ctx context.Context, filter bson.M) ([]*types.Room, error) {
+func (s *MongoRoomStore) GetRooms(ctx context.Context, filter Map) ([]*types.Room, error) {
 	cursor, err := s.coll.Find(ctx, filter)
 	if err != nil {
 		return nil, err

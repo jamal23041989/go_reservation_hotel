@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/db"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
@@ -20,7 +19,7 @@ func NewBookingHandler(store *db.Store) *BookingHandler {
 }
 
 func (h *BookingHandler) HandleGetBookings(c *fiber.Ctx) error {
-	bookings, err := h.store.Booking.GetBookings(c.Context(), bson.M{})
+	bookings, err := h.store.Booking.GetBookings(c.Context(), db.Map{})
 	if err != nil {
 		return err
 	}
@@ -72,7 +71,7 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := h.store.Booking.UpdateBooking(c.Context(), c.Params("id"), bson.M{"canceled": true}); err != nil {
+	if err := h.store.Booking.UpdateBooking(c.Context(), c.Params("id"), db.Map{"canceled": true}); err != nil {
 		return err
 	}
 

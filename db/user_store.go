@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/jamal23041989/go_reservation_hotel/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -12,6 +13,8 @@ import (
 const (
 	userColl = "users"
 )
+
+type Map map[string]any
 
 type Dropper interface {
 	Drop(context.Context) error
@@ -23,7 +26,7 @@ type UserStore interface {
 	GetUserByID(context.Context, string) (*types.User, error)
 	GetUsers(context.Context) ([]*types.User, error)
 	InsertUser(context.Context, *types.User) (*types.User, error)
-	UpdateUser(context.Context, string, bson.M) error
+	UpdateUser(context.Context, string, Map) error
 	DeleteUser(context.Context, string) error
 	GetUserByEmail(context.Context, string) (*types.User, error)
 }
@@ -41,9 +44,9 @@ func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
 }
 
 func (s *MongoUserStore) GetUserByID(ctx context.Context, id string) (*types.User, error) {
-	objectID, err := ConvertToObjectID(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return nil, err
+		return nil, pkg.ErrInvalidID()
 	}
 
 	var user types.User
@@ -78,10 +81,10 @@ func (s *MongoUserStore) InsertUser(ctx context.Context, user *types.User) (*typ
 	return user, nil
 }
 
-func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update bson.M) error {
-	objectID, err := ConvertToObjectID(id)
+func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update Map) error {
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return pkg.ErrInvalidID()
 	}
 
 	res, err := s.coll.UpdateOne(ctx, bson.M{"_id": objectID}, bson.M{"$set": update})
@@ -96,9 +99,9 @@ func (s *MongoUserStore) UpdateUser(ctx context.Context, id string, update bson.
 }
 
 func (s *MongoUserStore) DeleteUser(ctx context.Context, id string) error {
-	objectID, err := ConvertToObjectID(id)
+	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return err
+		return pkg.ErrInvalidID()
 	}
 
 	deleteOne, err := s.coll.DeleteOne(ctx, bson.M{"_id": objectID})

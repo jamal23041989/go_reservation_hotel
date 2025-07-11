@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/jamal23041989/go_reservation_hotel/types"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -23,7 +24,7 @@ func (h *UserHandler) HandleGetUser(c *fiber.Ctx) error {
 	user, err := h.userStore.GetUserByID(c.Context(), id)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return c.JSON(map[string]string{"error": "not found"})
+			return c.Status(pkg.ErrNotFound().Code).JSON(pkg.ErrNotFound())
 		}
 		return err
 	}
@@ -42,7 +43,7 @@ func (h *UserHandler) HandleGetUsers(c *fiber.Ctx) error {
 func (h *UserHandler) HandleInsertUser(c *fiber.Ctx) error {
 	var params types.CreateUserParams
 	if err := c.BodyParser(&params); err != nil {
-		return err
+		return pkg.ErrBadRequest()
 	}
 	if errorsValid := params.Validate(); len(errorsValid) > 0 {
 		return c.JSON(errorsValid)
@@ -66,12 +67,12 @@ func (h *UserHandler) HandleUpdateUser(c *fiber.Ctx) error {
 
 	var updateData types.UpdateUserParams
 	if err := c.BodyParser(&updateData); err != nil {
-		return err
+		return pkg.ErrBadRequest()
 	}
 
 	if err := h.userStore.UpdateUser(c.Context(), id, updateData.ToBSON()); err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
-			return fiber.ErrNotFound
+			return pkg.ErrNotFound()
 		}
 		return err
 	}

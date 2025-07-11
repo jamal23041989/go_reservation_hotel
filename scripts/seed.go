@@ -8,6 +8,7 @@ import (
 	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"golang.org/x/exp/rand"
 	"log"
 	"time"
 )
@@ -41,4 +42,10 @@ func main() {
 	room := fixtures.AddRoom(store, "medium", false, 129.29, hotel.ID)
 	booking := fixtures.AddBooking(store, user.ID, room.ID, time.Now(), time.Now().AddDate(0, 0, 2))
 	fmt.Println(booking)
+
+	for i := 1; i <= 100; i++ {
+		name := fmt.Sprintf("fake hotel number %d", i)
+		location := fmt.Sprintf("location %d", i)
+		fixtures.AddHotel(store, name, location, rand.Intn(5)+1, nil)
+	}
 }

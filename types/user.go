@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 	"regexp"
@@ -20,8 +19,8 @@ type UpdateUserParams struct {
 	LastName  string `json:"last_name"`
 }
 
-func (p UpdateUserParams) ToBSON() bson.M {
-	m := bson.M{}
+func (p UpdateUserParams) ToBSON() map[string]any {
+	m := map[string]any{}
 	if len(p.FirstName) > 0 {
 		m["first_name"] = p.FirstName
 	}

@@ -7,15 +7,14 @@ import (
 	"github.com/jamal23041989/go_reservation_hotel/api"
 	"github.com/jamal23041989/go_reservation_hotel/db"
 	"github.com/jamal23041989/go_reservation_hotel/middleware"
+	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 )
 
 var config = fiber.Config{
-	ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-		return ctx.JSON(map[string]string{"error": err.Error()})
-	},
+	ErrorHandler: pkg.ErrorHandler,
 }
 
 func main() {
@@ -70,7 +69,7 @@ func main() {
 
 	// hotel handlers
 	apiV1.Get("/hotel", hotelHandler.HandleGetHotels)
-	apiV1.Get("/hotel/:id", hotelHandler.HandleGetHotelByID)
+	apiV1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
 	apiV1.Get("/hotel/:id/rooms", hotelHandler.HandleGetHotelByIDRooms)
 
 	// room handlers
