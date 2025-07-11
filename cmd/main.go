@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/api"
-	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/internal/handler"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
+	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
 	"github.com/jamal23041989/go_reservation_hotel/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/joho/godotenv"
@@ -34,32 +35,30 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// store
 	var (
-		userStore    = db.NewMongoUserStore(client)
-		hotelStore   = db.NewMongoHotelStore(client)
-		roomStore    = db.NewMongoRoomStore(client, hotelStore)
-		bookingStore = db.NewMongoBookingStore(client)
-		store        = &db.Store{
-			User:    userStore,
-			Hotel:   hotelStore,
-			Room:    roomStore,
-			Booking: bookingStore,
-		}
-	)
+		// repository init
+		userRepository    = mongodb.NewMongoUserRepository(client)
+		bookingRepository = mongodb.NewMongoBookingRepository(client)
+		hotelRepository   = mongodb.NewMongoHotelRepository(client)
+		roomRepository    = mongodb.NewMongoRoomRepository(client, *hotelRepository)
 
-	// handlers init
-	var (
-		userHandler    = api.NewUserHandler(userStore)
-		hotelHandler   = api.NewHotelHandler(store)
-		authHandler    = api.NewAuthHandler(userStore)
-		roomHandler    = api.NewRoomHandler(store)
-		bookingHandler = api.NewBookingHandler(store)
+		// usecase init
+		userCases    = usecase.NewUserUsecase(userRepository)
+		bookingCases = usecase.NewBookingUsecase(bookingRepository)
+		hotelCases   = usecase.NewHotelUsecase(hotelRepository)
+		roomCases    = usecase.NewRoomUsecase(roomRepository)
+
+		// handlers init
+		userHandler    = handler.NewUserHandler(userCases)
+		authHandler    = handler.NewAuthHandler(userCases)
+		bookingHandler = handler.NewBookingHandler(bookingCases)
+		roomHandler    = handler.NewRoomHandler(roomCases, bookingCases)
+		hotelHandler   = handler.NewHotelHandler(hotelCases, roomCases)
 	)
 
 	// fiber config and group handler
 	app := fiber.New(config)
-	apiV1 := app.Group("/api/v1", middleware.JwtAuthentication(userStore))
+	apiV1 := app.Group("/api/v1", middleware.JwtAuthentication(*userRepository))
 	auth := app.Group("/api")
 	admin := apiV1.Group("/admin", middleware.AdminAuth)
 
@@ -68,8 +67,8 @@ func main() {
 
 	// user handlers
 	apiV1.Get("/user", userHandler.HandleGetUsers)
-	apiV1.Get("/user/:id", userHandler.HandleGetUser)
-	apiV1.Post("/user", userHandler.HandleInsertUser)
+	apiV1.Get("/user/:id", userHandler.HandleGetUserByID)
+	apiV1.Post("/user", userHandler.HandleCreateUser)
 	apiV1.Put("/user/:id", userHandler.HandleUpdateUser)
 	apiV1.Delete("/user/:id", userHandler.HandleDeleteUser)
 

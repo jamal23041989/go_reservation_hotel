@@ -3,15 +3,15 @@ package fixtures
 import (
 	"context"
 	"fmt"
-	"github.com/jamal23041989/go_reservation_hotel/db"
-	"github.com/jamal23041989/go_reservation_hotel/types"
+	types2 "github.com/jamal23041989/go_reservation_hotel/aold/types"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"time"
 )
 
-func AddUser(store *db.Store, fn, ln string, admin bool) *types.User {
-	user, err := types.NewUserFromParams(types.CreateUserParams{
+func AddUser(store *mongodb.Store, fn, ln string, admin bool) *types2.User {
+	user, err := types2.NewUserFromParams(types2.CreateUserParams{
 		Email:     fmt.Sprintf("%s@%s.com", fn, ln),
 		FirstName: fn,
 		LastName:  ln,
@@ -30,12 +30,12 @@ func AddUser(store *db.Store, fn, ln string, admin bool) *types.User {
 	return insertedUser
 }
 
-func AddHotel(store *db.Store, name, loc string, rating int, rooms []primitive.ObjectID) *types.Hotel {
+func AddHotel(store *mongodb.Store, name, loc string, rating int, rooms []primitive.ObjectID) *types2.Hotel {
 	var roomIDString = rooms
 	if rooms == nil {
 		roomIDString = []primitive.ObjectID{}
 	}
-	hotel := types.Hotel{
+	hotel := types2.Hotel{
 		Name:     name,
 		Location: loc,
 		Rating:   rating,
@@ -49,8 +49,8 @@ func AddHotel(store *db.Store, name, loc string, rating int, rooms []primitive.O
 	return insertedHotel
 }
 
-func AddRoom(store *db.Store, size string, ss bool, price float64, hotelID primitive.ObjectID) *types.Room {
-	room := types.Room{
+func AddRoom(store *mongodb.Store, size string, ss bool, price float64, hotelID primitive.ObjectID) *types2.Room {
+	room := types2.Room{
 		Size:    size,
 		Price:   price,
 		Seaside: ss,
@@ -64,8 +64,8 @@ func AddRoom(store *db.Store, size string, ss bool, price float64, hotelID primi
 	return insertedRoom
 }
 
-func AddBooking(store *db.Store, uid, rid primitive.ObjectID, from, till time.Time) *types.Booking {
-	booking := types.Booking{
+func AddBooking(store *mongodb.Store, uid, rid primitive.ObjectID, from, till time.Time) *types2.Booking {
+	booking := types2.Booking{
 		UserID:   uid,
 		RoomID:   rid,
 		FromDate: from,

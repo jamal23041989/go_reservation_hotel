@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"net/http"
 	"os"
@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func JwtAuthentication(userStore db.UserStore) fiber.Handler {
+func JwtAuthentication(userStore mongodb.MongoUserRepository) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		token, ok := c.GetReqHeaders()["X-Api-Token"]
 		if !ok {

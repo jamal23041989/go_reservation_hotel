@@ -1,11 +1,10 @@
-package api
+package handler
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/types"
 	"net/http/httptest"
 	"testing"
 )
@@ -15,10 +14,11 @@ func TestInsertUser(t *testing.T) {
 	defer tdb.teardown(t)
 
 	app := fiber.New()
-	userHandler := NewUserHandler(tdb.User)
+
+	userHandler := NewUserHandler(tdb.Store.User)
 	app.Post("/", userHandler.HandleInsertUser)
 
-	params := types.CreateUserParams{
+	params := typess.CreateUserParams{
 		Email:     "some@foo.com",
 		FirstName: "james",
 		LastName:  "foo",
@@ -34,7 +34,7 @@ func TestInsertUser(t *testing.T) {
 		t.Error(err)
 	}
 
-	var user types.User
+	var user typess.User
 	if err := json.NewDecoder(resp.Body).Decode(&user); err != nil {
 		t.Error(err)
 	}

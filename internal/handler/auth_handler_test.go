@@ -1,21 +1,22 @@
-package api
+package handler
 
 import (
 	"bytes"
 	"context"
 	"encoding/json"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/db"
-	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
-	"github.com/jamal23041989/go_reservation_hotel/types"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb/fixtures"
+	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"testing"
 )
 
-func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
-	user, err := types.NewUserFromParams(types.CreateUserParams{
+func insertTestUser(t *testing.T, userCase usecase.UserUsecase) *models.User {
+	user, err := models.NewUserFromParams(models.CreateUserParams{
 		Email:     "james2@gmail.com",
 		FirstName: "james",
 		LastName:  "scot",
@@ -25,7 +26,7 @@ func insertTestUser(t *testing.T, userStore db.UserStore) *types.User {
 		t.Fatal(err)
 	}
 
-	if _, err := userStore.InsertUser(context.Background(), user); err != nil {
+	if _, err := userCase.CreateUser(context.Background(), user); err != nil {
 		t.Fatal(err)
 	}
 
@@ -41,7 +42,7 @@ func TestAuthenticateSuccess(t *testing.T) {
 	authHandler := NewAuthHandler(tdb.User)
 	app.Post("/", authHandler.HandleAuthenticate)
 
-	authParams := AuthParams{
+	authParams := domain.AuthParams{
 		Email:    "james@foo.com",
 		Password: "james_foo",
 	}
@@ -58,7 +59,7 @@ func TestAuthenticateSuccess(t *testing.T) {
 		t.Fatalf("expected http status of 200 but got %d", err)
 	}
 
-	var authResp AuthResponse
+	var authResp domain.AuthResponse
 	if err := json.NewDecoder(resp.Body).Decode(&authResp); err != nil {
 		t.Fatal(err)
 	}

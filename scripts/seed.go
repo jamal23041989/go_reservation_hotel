@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/jamal23041989/go_reservation_hotel/api"
 	"github.com/jamal23041989/go_reservation_hotel/db"
-	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
+	"github.com/jamal23041989/go_reservation_hotel/internal/handler"
+	mongo2 "github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb/fixtures"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -37,17 +38,17 @@ func main() {
 	}
 
 	hotelStore := db.NewMongoHotelStore(client)
-	store := &db.Store{
-		User:    db.NewMongoUserStore(client),
-		Room:    db.NewMongoRoomStore(client, hotelStore),
-		Booking: db.NewMongoBookingStore(client),
+	store := &mongo2.Store{
+		User:    mongo2.NewMongoUserStore(client),
+		Room:    mongo2.NewMongoRoomStore(client, hotelStore),
+		Booking: mongo2.NewMongoBookingStore(client),
 		Hotel:   hotelStore,
 	}
 
 	user := fixtures.AddUser(store, "foo", "foo", false)
-	fmt.Println("User -> ", api.CreateTokenFromUser(user))
+	fmt.Println("User -> ", handler.CreateTokenFromUser(user))
 	admin := fixtures.AddUser(store, "admin", "admin", true)
-	fmt.Println("Admin -> ", api.CreateTokenFromUser(admin))
+	fmt.Println("Admin -> ", handler.CreateTokenFromUser(admin))
 	hotel := fixtures.AddHotel(store, "some hotel", "bermude", 5, nil)
 	room := fixtures.AddRoom(store, "medium", false, 129.29, hotel.ID)
 	booking := fixtures.AddBooking(store, user.ID, room.ID, time.Now(), time.Now().AddDate(0, 0, 2))

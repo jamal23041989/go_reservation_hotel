@@ -1,34 +1,26 @@
-package api
+package handler
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
+	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 )
 
 type HotelHandler struct {
-	store *db.Store
+	hotelUsecase usecase.HotelUsecase
+	roomUsecase  usecase.RoomUsecase
 }
 
-func NewHotelHandler(store *db.Store) *HotelHandler {
+func NewHotelHandler(hotelUsecase *usecase.HotelUsecase, roomUsecase *usecase.RoomUsecase) *HotelHandler {
 	return &HotelHandler{
-		store: store,
+		hotelUsecase: *hotelUsecase,
+		roomUsecase:  *roomUsecase,
 	}
 }
 
-type ResourceResp struct {
-	Results int `json:"results"`
-	Data    any `json:"data"`
-	Page    int `json:"page"`
-}
-
-type HotelFilter struct {
-	db.Pagination
-	Rating int
-}
-
 func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
-	var hotelQueryParams HotelFilter
+	var hotelQueryParams domain.HotelFilter
 	if err := c.QueryParser(&hotelQueryParams); err != nil {
 		return pkg.ErrBadRequest()
 	}
@@ -54,16 +46,16 @@ func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
 		hotelQueryParams.Rating = 5
 	}
 
-	filter := db.Map{
+	filter := domain.Map{
 		"rating": hotelQueryParams.Rating,
 	}
 
-	hotels, err := h.store.Hotel.GetHotels(c.Context(), filter, &hotelQueryParams.Pagination)
+	hotels, err := h.hotelUsecase.GetAllHotels(c.Context(), filter, &hotelQueryParams.Pagination)
 	if err != nil {
 		return err
 	}
 
-	resp := ResourceResp{
+	resp := domain.ResourceResp{
 		Data:    hotels,
 		Results: len(hotels),
 		Page:    int(hotelQueryParams.Page),
@@ -75,7 +67,7 @@ func (h *HotelHandler) HandleGetHotels(c *fiber.Ctx) error {
 func (h *HotelHandler) HandleGetHotelByIDRooms(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	rooms, err := h.store.Room.GetRooms(c.Context(), db.Map{"hotel_id": id})
+	rooms, err := h.roomUsecase.GetRooms(c.Context(), domain.Map{"hotel_id": id})
 	if err != nil {
 		return err
 	}
@@ -86,7 +78,7 @@ func (h *HotelHandler) HandleGetHotelByIDRooms(c *fiber.Ctx) error {
 func (h *HotelHandler) HandleGetHotel(c *fiber.Ctx) error {
 	id := c.Params("id")
 
-	hotel, err := h.store.Hotel.GetHotelByID(c.Context(), id)
+	hotel, err := h.hotelUsecase.GetByIDHotel(c.Context(), id)
 	if err != nil {
 		return err
 	}

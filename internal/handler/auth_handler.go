@@ -1,44 +1,35 @@
-package api
+package handler
 
 import (
 	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jamal23041989/go_reservation_hotel/db"
-	"github.com/jamal23041989/go_reservation_hotel/types"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
+	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
 	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"time"
 )
 
 type AuthHandler struct {
-	userStore db.UserStore
+	userUsecase usecase.UserUsecase
 }
 
-func NewAuthHandler(userStore db.UserStore) *AuthHandler {
+func NewAuthHandler(userUsecase *usecase.UserUsecase) *AuthHandler {
 	return &AuthHandler{
-		userStore: userStore,
+		userUsecase: *userUsecase,
 	}
 }
 
-type AuthParams struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type AuthResponse struct {
-	User  *types.User `json:"user"`
-	Token string      `json:"token"`
-}
-
 func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
-	var authParams AuthParams
+	var authParams domain.AuthParams
 	if err := c.BodyParser(&authParams); err != nil {
 		return err
 	}
 
-	user, err := h.userStore.GetUserByEmail(c.Context(), authParams.Email)
+	user, err := h.userUsecase.GetByEmailUser(c.Context(), authParams.Email)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return fmt.Errorf("invalid credentials")
@@ -46,11 +37,11 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 		return err
 	}
 
-	if !types.IsValidPassword(user.EncryptedPassword, authParams.Password) {
+	if !models.IsValidPassword(user.EncryptedPassword, authParams.Password) {
 		return fmt.Errorf("invalid credentials")
 	}
 
-	resp := AuthResponse{
+	resp := domain.AuthResponse{
 		User:  user,
 		Token: CreateTokenFromUser(user),
 	}
@@ -58,7 +49,7 @@ func (h *AuthHandler) HandleAuthenticate(c *fiber.Ctx) error {
 	return c.JSON(resp)
 }
 
-func CreateTokenFromUser(user *types.User) string {
+func CreateTokenFromUser(user *models.User) string {
 	expires := time.Now().Add(24 * time.Hour).Unix()
 
 	claims := jwt.MapClaims{

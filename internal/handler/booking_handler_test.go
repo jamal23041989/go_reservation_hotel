@@ -1,13 +1,12 @@
-package api
+package handler
 
 import (
 	"encoding/json"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb/fixtures"
 	"github.com/jamal23041989/go_reservation_hotel/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
-	"github.com/jamal23041989/go_reservation_hotel/types"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,7 +43,7 @@ func TestGetBookings(t *testing.T) {
 		t.Fatalf("expected http status of 200 but got %d", resp.StatusCode)
 	}
 
-	var bookings []*types.Booking
+	var bookings []*typess.Booking
 	if err := json.NewDecoder(resp.Body).Decode(&bookings); err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +103,7 @@ func TestUserGetBooking(t *testing.T) {
 		t.Fatalf("expected http status of 200 but got %d", resp.StatusCode)
 	}
 
-	var bookingResp *types.Booking
+	var bookingResp *typess.Booking
 	if err := json.NewDecoder(resp.Body).Decode(&bookingResp); err != nil {
 		t.Fatal(err)
 	}

@@ -1,40 +1,30 @@
-package db
+package mongodb
 
 import (
 	"context"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
-	"github.com/jamal23041989/go_reservation_hotel/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
 )
 
-const (
-	hotelColl = "hotels"
-)
+const hotelColl = "hotels"
 
-type HotelStore interface {
-	Insert(context.Context, *types.Hotel) (*types.Hotel, error)
-	Update(context.Context, Map, Map) error
-	GetHotels(context.Context, Map, *Pagination) ([]*types.Hotel, error)
-	GetHotelByID(context.Context, string) (*types.Hotel, error)
-}
-
-type MongoHotelStore struct {
+type MongoHotelRepository struct {
 	client *mongo.Client
 	coll   *mongo.Collection
 }
 
-func NewMongoHotelStore(client *mongo.Client) *MongoHotelStore {
-	dbName := os.Getenv(MongoDbNameEnvName)
-	return &MongoHotelStore{
+func NewMongoHotelRepository(client *mongo.Client) *MongoHotelRepository {
+	return &MongoHotelRepository{
 		client: client,
-		coll:   client.Database(dbName).Collection(hotelColl),
+		coll:   client.Database(DbName).Collection(hotelColl),
 	}
 }
 
-func (s *MongoHotelStore) Insert(ctx context.Context, hotel *types.Hotel) (*types.Hotel, error) {
+func (s *MongoHotelRepository) CreateHotel(ctx context.Context, hotel *models.Hotel) (*models.Hotel, error) {
 	resp, err := s.coll.InsertOne(ctx, hotel)
 	if err != nil {
 		return nil, err
@@ -44,7 +34,7 @@ func (s *MongoHotelStore) Insert(ctx context.Context, hotel *types.Hotel) (*type
 	return hotel, nil
 }
 
-func (s *MongoHotelStore) Update(ctx context.Context, filter Map, update Map) error {
+func (s *MongoHotelRepository) UpdateHotel(ctx context.Context, filter domain.Map, update domain.Map) error {
 	res, err := s.coll.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return err
@@ -56,7 +46,11 @@ func (s *MongoHotelStore) Update(ctx context.Context, filter Map, update Map) er
 	return nil
 }
 
-func (s *MongoHotelStore) GetHotels(ctx context.Context, filter Map, pag *Pagination) ([]*types.Hotel, error) {
+func (s *MongoHotelRepository) GetAllHotels(
+	ctx context.Context,
+	filter domain.Map,
+	pag *domain.Pagination,
+) ([]*models.Hotel, error) {
 	if pag.Limit <= 0 {
 		pag.Limit = 10
 	}
@@ -74,7 +68,7 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter Map, pag *Pagina
 	}
 	defer cursor.Close(ctx)
 
-	var hotels []*types.Hotel
+	var hotels []*models.Hotel
 	if err := cursor.All(ctx, &hotels); err != nil {
 		return nil, err
 	}
@@ -82,14 +76,14 @@ func (s *MongoHotelStore) GetHotels(ctx context.Context, filter Map, pag *Pagina
 	return hotels, nil
 }
 
-func (s *MongoHotelStore) GetHotelByID(ctx context.Context, id string) (*types.Hotel, error) {
+func (s *MongoHotelRepository) GetByIDHotel(ctx context.Context, id string) (*models.Hotel, error) {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, pkg.ErrInvalidID()
 	}
 
-	var hotel types.Hotel
-	if err := s.coll.FindOne(ctx, Map{"_id": objectID}).Decode(&hotel); err != nil {
+	var hotel models.Hotel
+	if err := s.coll.FindOne(ctx, domain.Map{"_id": objectID}).Decode(&hotel); err != nil {
 		return nil, err
 	}
 

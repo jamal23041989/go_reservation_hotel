@@ -1,8 +1,8 @@
-package api
+package handler
 
 import (
 	"context"
-	"github.com/jamal23041989/go_reservation_hotel/db"
+	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -12,7 +12,14 @@ import (
 
 type testDB struct {
 	client *mongo.Client
-	*db.Store
+	Store  *Store
+}
+
+type Store struct {
+	Booking *mongodb.MongoBookingRepository
+	User    *mongodb.MongoUserRepository
+	Hotel   *mongodb.MongoHotelRepository
+	Room    *mongodb.MongoRoomRepository
 }
 
 func (tdb *testDB) teardown(t *testing.T) {
@@ -31,12 +38,12 @@ func setup(t *testing.T) *testDB {
 		log.Fatal(err)
 	}
 
-	hotelStore := db.NewMongoHotelStore(client)
-	store := &db.Store{
-		User:    db.NewMongoUserStore(client),
+	hotelStore := mongodb.NewMongoHotelRepository(client)
+	store := &Store{
+		Booking: mongodb.NewMongoBookingRepository(client),
+		User:    mongodb.NewMongoUserRepository(client),
+		Room:    mongodb.NewMongoRoomRepository(client, *hotelStore),
 		Hotel:   hotelStore,
-		Room:    db.NewMongoRoomStore(client, hotelStore),
-		Booking: db.NewMongoBookingStore(client),
 	}
 
 	return &testDB{
