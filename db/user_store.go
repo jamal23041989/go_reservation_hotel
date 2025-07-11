@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"os"
 )
 
 const (
@@ -37,9 +38,10 @@ type MongoUserStore struct {
 }
 
 func NewMongoUserStore(client *mongo.Client) *MongoUserStore {
+	dbName := os.Getenv(MongoDbNameEnvName)
 	return &MongoUserStore{
 		client: client,
-		coll:   client.Database(NameDb).Collection(userColl),
+		coll:   client.Database(dbName).Collection(userColl),
 	}
 }
 

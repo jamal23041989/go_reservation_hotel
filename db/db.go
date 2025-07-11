@@ -1,9 +1,6 @@
 package db
 
-const (
-	NameDb = "hotel-reservation"
-	UriDb  = "mongodb://localhost:27017"
-)
+var MongoDbNameEnvName = "MONGO_DB_NAME"
 
 type Pagination struct {
 	Limit int64

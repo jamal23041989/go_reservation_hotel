@@ -6,23 +6,33 @@ import (
 	"github.com/jamal23041989/go_reservation_hotel/api"
 	"github.com/jamal23041989/go_reservation_hotel/db"
 	"github.com/jamal23041989/go_reservation_hotel/db/fixtures"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"golang.org/x/exp/rand"
 	"log"
+	"os"
 	"time"
 )
 
+func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("Ошибка при загрузке .env файла")
+	}
+}
+
 func main() {
+	dbUri := os.Getenv("MONGO_URI")
+	dbName := os.Getenv("MONGO_DB_NAME")
 	ctx := context.Background()
 
 	var err error
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(db.UriDb))
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbUri))
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if err := client.Database(db.NameDb).Drop(ctx); err != nil {
+	if err := client.Database(dbName).Drop(ctx); err != nil {
 		log.Fatal(err)
 	}
 

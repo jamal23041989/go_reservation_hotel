@@ -2,28 +2,34 @@ package main
 
 import (
 	"context"
-	"flag"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/api"
 	"github.com/jamal23041989/go_reservation_hotel/db"
 	"github.com/jamal23041989/go_reservation_hotel/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
+	"os"
 )
+
+func init() {
+	if err := godotenv.Load(".env"); err != nil {
+		log.Fatal("Ошибка при загрузке .env файла")
+	}
+}
 
 var config = fiber.Config{
 	ErrorHandler: pkg.ErrorHandler,
 }
 
 func main() {
-	// listenAddr
-	listenAddr := flag.String("listenAddr", ":5000", "The listen address of the API server")
-	flag.Parse()
+	dbUri := os.Getenv("MONGO_URI")
+	httpListenAddress := os.Getenv("MONGO_DB_NAME")
 
 	// mongodb client
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(db.UriDb))
+	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(dbUri))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -84,5 +90,5 @@ func main() {
 	admin.Get("/booking", bookingHandler.HandleGetBookings)
 
 	// http server
-	app.Listen(*listenAddr)
+	app.Listen(httpListenAddress)
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/jamal23041989/go_reservation_hotel/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"os"
 )
 
 const (
@@ -25,9 +26,10 @@ type MongoBookingStore struct {
 }
 
 func NewMongoBookingStore(client *mongo.Client) *MongoBookingStore {
+	dbName := os.Getenv(MongoDbNameEnvName)
 	return &MongoBookingStore{
 		client: client,
-		coll:   client.Database(NameDb).Collection(bookingColl),
+		coll:   client.Database(dbName).Collection(bookingColl),
 	}
 }
 
