@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jamal23041989/go_reservation_hotel/internal/handler"
-	"github.com/jamal23041989/go_reservation_hotel/internal/middleware"
-	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	usecase2 "github.com/jamal23041989/go_reservation_hotel/internal/application/service"
+	mongodb2 "github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/db/mongodb"
+	handler2 "github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/handler"
+	"github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -36,24 +36,24 @@ func main() {
 	}
 
 	var (
-		// repository init
-		userRepository    = mongodb.NewMongoUserRepository(client)
-		bookingRepository = mongodb.NewMongoBookingRepository(client)
-		hotelRepository   = mongodb.NewMongoHotelRepository(client)
-		roomRepository    = mongodb.NewMongoRoomRepository(client, *hotelRepository)
+		// db init
+		userRepository    = mongodb2.NewMongoUserRepository(client)
+		bookingRepository = mongodb2.NewMongoBookingRepository(client)
+		hotelRepository   = mongodb2.NewMongoHotelRepository(client)
+		roomRepository    = mongodb2.NewMongoRoomRepository(client, *hotelRepository)
 
-		// usecase init
-		userCases    = usecase.NewUserUsecase(userRepository)
-		bookingCases = usecase.NewBookingUsecase(bookingRepository)
-		hotelCases   = usecase.NewHotelUsecase(hotelRepository)
-		roomCases    = usecase.NewRoomUsecase(roomRepository)
+		// service init
+		userCases    = usecase2.NewUserService(userRepository)
+		bookingCases = usecase2.NewBookingService(bookingRepository)
+		hotelCases   = usecase2.NewHotelService(hotelRepository)
+		roomCases    = usecase2.NewRoomService(roomRepository)
 
 		// handlers init
-		userHandler    = handler.NewUserHandler(userCases)
-		authHandler    = handler.NewAuthHandler(userCases)
-		bookingHandler = handler.NewBookingHandler(bookingCases)
-		roomHandler    = handler.NewRoomHandler(roomCases, bookingCases)
-		hotelHandler   = handler.NewHotelHandler(hotelCases, roomCases)
+		userHandler    = handler2.NewUserHandler(userCases)
+		authHandler    = handler2.NewAuthHandler(userCases)
+		bookingHandler = handler2.NewBookingHandler(bookingCases)
+		roomHandler    = handler2.NewRoomHandler(roomCases, bookingCases)
+		hotelHandler   = handler2.NewHotelHandler(hotelCases, roomCases)
 	)
 
 	// fiber config and group handler

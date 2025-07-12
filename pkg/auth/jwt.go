@@ -3,14 +3,14 @@ package auth
 import (
 	"fmt"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/entity"
 	"os"
 	"time"
 )
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
-func CreateToken(user *models.User) (string, error) {
+func CreateToken(user *entity.User) (string, error) {
 	expires := time.Now().Add(24 * time.Hour).Unix()
 	claims := jwt.MapClaims{
 		"user_id": user.ID.Hex(),

@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/entity"
 	"time"
 )
 
@@ -40,6 +40,6 @@ type AuthParams struct {
 }
 
 type AuthResponse struct {
-	User  *models.User `json:"user"`
+	User  *entity.User `json:"user"`
 	Token string       `json:"token"`
 }

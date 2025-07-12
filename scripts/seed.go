@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/jamal23041989/go_reservation_hotel/db"
-	"github.com/jamal23041989/go_reservation_hotel/internal/handler"
-	mongo2 "github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
-	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb/fixtures"
+	mongo2 "github.com/jamal23041989/go_reservation_hotel/internal/db/mongodb"
+	"github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/db/mongodb"
+	"github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/db/mongodb/fixtures"
+	"github.com/jamal23041989/go_reservation_hotel/internal/infrastructure/handler"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -38,7 +39,7 @@ func main() {
 	}
 
 	hotelStore := db.NewMongoHotelStore(client)
-	store := &mongo2.Store{
+	store := &mongodb.Store{
 		User:    mongo2.NewMongoUserStore(client),
 		Room:    mongo2.NewMongoRoomStore(client, hotelStore),
 		Booking: mongo2.NewMongoBookingStore(client),
