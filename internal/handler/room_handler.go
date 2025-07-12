@@ -6,7 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/usecases"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -15,14 +15,14 @@ import (
 )
 
 type RoomHandler struct {
-	roomUsecase    usecase.RoomUsecase
-	bookingUsecase usecase.BookingUsecase
+	roomUsecase    usecases.RoomUsecase
+	bookingUsecase usecases.BookingUsecase
 }
 
-func NewRoomHandler(roomUsecase *usecase.RoomUsecase, bookingUsecase *usecase.BookingUsecase) *RoomHandler {
+func NewRoomHandler(roomUsecase usecases.RoomUsecase, bookingUsecase usecases.BookingUsecase) *RoomHandler {
 	return &RoomHandler{
-		roomUsecase:    *roomUsecase,
-		bookingUsecase: *bookingUsecase,
+		roomUsecase:    roomUsecase,
+		bookingUsecase: bookingUsecase,
 	}
 }
 

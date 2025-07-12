@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/handler"
+	"github.com/jamal23041989/go_reservation_hotel/internal/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb"
 	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
-	"github.com/jamal23041989/go_reservation_hotel/middleware"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -58,9 +58,9 @@ func main() {
 
 	// fiber config and group handler
 	app := fiber.New(config)
-	apiV1 := app.Group("/api/v1", middleware.JwtAuthentication(*userRepository))
+	apiV1 := app.Group("/api/v1", middleware.AuthMiddleware())
 	auth := app.Group("/api")
-	admin := apiV1.Group("/admin", middleware.AdminAuth)
+	//admin := apiV1.Group("/admin",)
 
 	// auth
 	auth.Post("/auth", authHandler.HandleAuthenticate)

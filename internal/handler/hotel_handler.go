@@ -3,19 +3,19 @@ package handler
 import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/usecases"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 )
 
 type HotelHandler struct {
-	hotelUsecase usecase.HotelUsecase
-	roomUsecase  usecase.RoomUsecase
+	hotelUsecase usecases.HotelUsecase
+	roomUsecase  usecases.RoomUsecase
 }
 
-func NewHotelHandler(hotelUsecase *usecase.HotelUsecase, roomUsecase *usecase.RoomUsecase) *HotelHandler {
+func NewHotelHandler(hotelUsecase usecases.HotelUsecase, roomUsecase usecases.RoomUsecase) *HotelHandler {
 	return &HotelHandler{
-		hotelUsecase: *hotelUsecase,
-		roomUsecase:  *roomUsecase,
+		hotelUsecase: hotelUsecase,
+		roomUsecase:  roomUsecase,
 	}
 }
 

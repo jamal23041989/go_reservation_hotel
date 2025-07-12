@@ -7,19 +7,19 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/usecases"
 	"go.mongodb.org/mongo-driver/mongo"
 	"os"
 	"time"
 )
 
 type AuthHandler struct {
-	userUsecase usecase.UserUsecase
+	userUsecase usecases.UserUsecase
 }
 
-func NewAuthHandler(userUsecase *usecase.UserUsecase) *AuthHandler {
+func NewAuthHandler(userUsecase usecases.UserUsecase) *AuthHandler {
 	return &AuthHandler{
-		userUsecase: *userUsecase,
+		userUsecase: userUsecase,
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/repository/mongodb/fixtures"
-	"github.com/jamal23041989/go_reservation_hotel/middleware"
+	"github.com/jamal23041989/go_reservation_hotel/middleware1"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"net/http"
 	"net/http/httptest"

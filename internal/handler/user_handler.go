@@ -4,18 +4,18 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain/models"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/usecases"
 	"github.com/jamal23041989/go_reservation_hotel/pkg"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type UserHandler struct {
-	userUsecase usecase.UserUsecase
+	userUsecase usecases.UserUsecase
 }
 
-func NewUserHandler(userUsecase *usecase.UserUsecase) *UserHandler {
+func NewUserHandler(userUsecase usecases.UserUsecase) *UserHandler {
 	return &UserHandler{
-		userUsecase: *userUsecase,
+		userUsecase: userUsecase,
 	}
 }
 

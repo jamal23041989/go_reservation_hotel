@@ -4,18 +4,19 @@ import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jamal23041989/go_reservation_hotel/internal/domain"
-	"github.com/jamal23041989/go_reservation_hotel/internal/usecase"
+	"github.com/jamal23041989/go_reservation_hotel/internal/domain/usecases"
+	"github.com/jamal23041989/go_reservation_hotel/internal/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 )
 
 type BookingHandler struct {
-	bookingUsecase usecase.BookingUsecase
+	bookingUsecase usecases.BookingUsecase
 }
 
-func NewBookingHandler(bookingUsecase *usecase.BookingUsecase) *BookingHandler {
+func NewBookingHandler(bookingUsecase usecases.BookingUsecase) *BookingHandler {
 	return &BookingHandler{
-		bookingUsecase: *bookingUsecase,
+		bookingUsecase: bookingUsecase,
 	}
 }
 
@@ -37,7 +38,7 @@ func (h *BookingHandler) HandleGetBooking(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := getAuthUser(c)
+	user, err := middleware.GetAuthUser(c)
 	if err != nil {
 		return err
 	}
@@ -60,7 +61,7 @@ func (h *BookingHandler) HandleCancelBooking(c *fiber.Ctx) error {
 		return err
 	}
 
-	user, err := getAuthUser(c)
+	user, err := middleware.GetAuthUser(c)
 	if err != nil {
 		return err
 	}
